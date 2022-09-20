@@ -45,9 +45,13 @@ let persons = [
   })
   
   app.get('/info', (req, res) => {
-    res.send(`<p>Phonebook has info for ${persons.length} people</p>
-    <p> ${new Date().toString()} </p> `)
+    Person.count({}).then(count => {
+      res.send(`<p>Phonebook has info for ${count} people</p>
+      <p> ${new Date().toString()} </p> `)
+    })
+
   })
+
 
  app.get('/api/persons', (request, response) => {
   Person.find({}).then(persons => {
@@ -62,7 +66,6 @@ let persons = [
     return maxId + 1
   }
   
-
   app.post('/api/persons', (req, res) => {
     const body = req.body
     console.log
@@ -94,20 +97,57 @@ let persons = [
     res.json(person)
   })
 
-  app.get('/api/persons/:id', (request, response) => {
-    Person.findById(request.params.id).then(person => {
-      response.json(person)
-    })
+  app.get('/api/persons/:id', (request, response, next) => {
+    Person.findById(request.params.id)
+      .then(person => {
+        if (person) {
+          response.json(person)
+        } else {
+          response.status(404).end()
+        }
+      })
+      .catch(error => next(error))
   })
 
-  app.delete('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    persons = persons.filter(person => person.id !== id)
-    
+  app.put('/api/persons/:id', (request, response, next) => {
+    const body = request.body
   
-    res.status(204).end()
+    const person = {
+      name: body.name,
+      number: body.number,
+    }
+    Person.findByIdAndUpdate(request.params.id, person, { new: true })
+      .then(person => {
+        response.json(person)
+      })
+      .catch(error => next(error))
+  })
+
+  app.delete('/api/persons/:id', (request, response, next) => {
+    Person.findByIdAndRemove(request.params.id)
+      .then(person => {
+        if (person) {
+          response.status(204).end()
+        } else {
+          response.status(404).end()
+        }
+      })
+      .catch(error => next(error))
   })
   
+
+  const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+  
+    if (error.name === 'CastError') {
+      return response.status(400).send({ error: 'malformatted id' })
+    }
+  
+    next(error)
+  }
+  
+  app.use(errorHandler)
+
   const PORT = process.env.PORT
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
