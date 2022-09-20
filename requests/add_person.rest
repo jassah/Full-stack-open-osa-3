@@ -1,7 +1,7 @@
-POST https://secret-shore-28385.herokuapp.com/api/persons
+POST http://localhost:3001/api/persons
 Content-Type: application/json
 
 {
-    "name": "Timi Jee",
+    "name": "Uusi nimi",
     "number": "666-6666"
 }
