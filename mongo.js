@@ -14,30 +14,30 @@ const url =
 mongoose.connect(url)
 
 const personSchema = new mongoose.Schema({
-    name: String,
-    number: String,
- })
- 
- const Person = mongoose.model('Person', personSchema)
+  name: String,
+  number: String,
+})
+
+const Person = mongoose.model('Person', personSchema)
 
 if (!process.argv[3] || !process.argv[4]) {
-    Person.find({}).then(result => {
-        result.forEach(person => {
-          console.log(person)
-        })
-        mongoose.connection.close()
-      })
+  Person.find({}).then(result => {
+    result.forEach(person => {
+      console.log(person)
+    })
+    mongoose.connection.close()
+  })
 }
 
 else {
 
-    const person = new Person({
+  const person = new Person({
     name: name,
     number: number
-    })
+  })
 
-    person.save().then(result => {
-  console.log('person saved!')
-  mongoose.connection.close()
-})
+  person.save().then(result => {
+    console.log('person saved!')
+    mongoose.connection.close()
+  })
 }
