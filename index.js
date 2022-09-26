@@ -66,7 +66,7 @@ let persons = [
     return maxId + 1
   }
   
-  app.post('/api/persons', (req, res) => {
+  app.post('/api/persons', (req, res, next) => {
     const body = req.body
     console.log
     if ((persons.filter(x => x.name===body.name)).length > 0) {
@@ -90,12 +90,12 @@ let persons = [
 
     persons = persons.concat(person)
   
-    person.save().then(result => {
-      console.log('person saved!')
+    person.save()
+    .then(person => {
+      res.json(person)
     })
-    
-    res.json(person)
-  })
+    .catch(error => next(error))
+})
 
   app.get('/api/persons/:id', (request, response, next) => {
     Person.findById(request.params.id)
@@ -141,6 +141,8 @@ let persons = [
   
     if (error.name === 'CastError') {
       return response.status(400).send({ error: 'malformatted id' })
+    }else if (error.name === 'ValidationError') {
+      return response.status(400).json({ error: error.message })
     }
   
     next(error)
